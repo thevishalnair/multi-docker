@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t thevishalnair/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run thevishalnair/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t thevishalnair/multi-client ./client
+  - docker build -t thevishalnair/multi-nginx ./nginx
+  - docker build -t thevishalnair/server ./server
+  - docker build -t thevishalnair/multi-worker ./worker
+  # Log in to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push thevishalnair/multi-client
+  - docker push thevishalnair/multi-nginx
+  - docker push thevishalnair/server
+  - docker push thevishalnair/multi-worker
+
